@@ -8,4 +8,4 @@ echo "Using CUDA device 0"
 python MinerU_convert_pdfs.py \
 --input_dir /ephemeral/home/xiong/data/Fund/pdf_parse/Fund_Document/input/All_AIV_2008-2025_PDF \
 --output_dir /ephemeral/home/xiong/data/Fund/pdf_parse/Fund_Document/output/All_AIV_2008-2025_json_md \
---n_workers 8
+--n_workers 1
