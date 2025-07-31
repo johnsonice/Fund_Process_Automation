@@ -138,4 +138,3 @@ if __name__ == "__main__":
     
     print(f"Processed {files_processed} files to clean paths.")
     
-# %%
