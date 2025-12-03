@@ -8,6 +8,7 @@ from llm_utils import BSAgent
 from utils import get_all_files
 from tqdm import tqdm
 import pandas as pd
+import argparse
 load_dotenv('../../.env')
 os.environ['OPENAI_API_KEY'] = os.getenv("OPENAI_API_KEY")
 
@@ -32,12 +33,33 @@ def unit_test():
 
 #%%
 if __name__ == "__main__":
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description='Process candidate resumes to extract Name, Gender, Nationality and URR status.')
+    parser.add_argument('--pdf_folder', type=str,
+                        default='/ephemeral/home/xiong/data/Fund/Resumes/current',
+                        help='Path to folder containing PDF resumes')
+    parser.add_argument('--output_file', type=str,
+                        default=None,
+                        help='Path to output CSV file (default: candidates_info.csv in pdf_folder)')
+    parser.add_argument('--skip_test', action='store_true',
+                        help='Skip the unit test')
+    args = parser.parse_args()
+
+    pdf_folder = args.pdf_folder
+
+    # Validate pdf_folder exists
+    if not os.path.exists(pdf_folder):
+        print(f"Error: PDF folder does not exist: {pdf_folder}")
+        sys.exit(1)
 
     # ### unit test for base agent
-    unit_test()
+    if not args.skip_test:
+        unit_test()
+
     #%%
-    pdf_folder = '/ephemeral/home/xiong/data/Fund/Resumes/current'
-    pdfs = get_all_files(pdf_folder,end_with='.pdf')
+    print(f"\nProcessing resumes from: {pdf_folder}")
+    pdfs = get_all_files(pdf_folder, end_with='.pdf')
+    print(f"Found {len(pdfs)} PDF files to process\n")
     #%%
     llm_agent  = BSAgent(model="gpt-4o-mini",  #gpt-40 gpt-4o-mini
                         temperature=0)
@@ -88,7 +110,15 @@ if __name__ == "__main__":
     
     #%%
     res_df = pd.DataFrame(res_list)
-    res_df.to_csv(os.path.join(pdf_folder,'candidates_info.csv'),index=False)
+
+    # Determine output file path
+    if args.output_file:
+        output_path = args.output_file
+    else:
+        output_path = os.path.join(pdf_folder, 'candidates_info.csv')
+
+    res_df.to_csv(output_path, index=False)
+    print(f"\nResults saved to: {output_path}")
     
     # Calculate statistics
     num_female = res_df[res_df['Gender'] == 'Female'].shape[0]
